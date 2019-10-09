@@ -1,57 +1,73 @@
-package eu.kanade.tachiyomi.extension.zh.dmzj
+package eu.kanade.tachiyomi.extension.zh.bika
 
+import com.google.gson.Gson
+import com.lfkdsk.bika.BikaApi
+import com.lfkdsk.bika.request.SignInBody
 import eu.kanade.tachiyomi.source.model.*
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.Request
 import okhttp3.Response
 
-class Bika : HttpSource() {
-    override val baseUrl: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val lang: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val name: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val supportsLatest: Boolean
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+open class Bika : HttpSource() {
+    override val baseUrl: String = "https://picaapi.picacomic.com/"
+    override val lang: String = "zh"
+    override val name: String = "BiKa"
+    override val supportsLatest: Boolean = false
+
+    var token: String? = ""
+    var category: String? = null
+    val gson: Gson = Gson()
+
+    init {
+//        val response = RestWakaClient().apiService.wakaInit.execute()
+        val body = SignInBody("lfkdsk", "lfk2014ws")
+        BikaApi.getInstance().initClient()
+        val signIn = BikaApi.getInstance()
+            .api
+            .signIn(body).execute()
+        token = signIn.body()?.data?.token
+        BikaApi.getInstance().initImage(token)
+    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return mutableListOf()
     }
 
     override fun imageUrlParse(response: Response): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun latestUpdatesParse(response: Response): MangasPage {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun latestUpdatesRequest(page: Int): Request {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ""
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return SManga.create()
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return mutableListOf()
     }
 
     override fun popularMangaParse(response: Response): MangasPage {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Helper.popularMangaParse(response)
     }
 
     override fun popularMangaRequest(page: Int): Request {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return BikaApi.getInstance().pageRequest(category, page)
     }
 
+    // useless now.
     override fun searchMangaParse(response: Response): MangasPage {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return MangasPage(mutableListOf(), false)
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Request.Builder().build()
+    }
+
+    override fun latestUpdatesParse(response: Response): MangasPage {
+        return MangasPage(mutableListOf(), false)
+    }
+
+    override fun latestUpdatesRequest(page: Int): Request {
+        return Request.Builder().build()
     }
 }

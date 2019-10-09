@@ -14,3 +14,6 @@ project(':duktape-stub').projectDir = new File("lib/duktape-stub")
 
 include ':preference-stub'
 project(':preference-stub').projectDir = new File("lib/preference-stub")
+
+include ':bika-api'
+project(':bika-api').projectDir = new File("lib/bika-api")
