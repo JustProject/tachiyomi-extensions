@@ -144,8 +144,15 @@ class Dmzj : HttpSource() {
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        println(response)
-        return mutableListOf()
+        return Helper.chapterListParse(response)
+    }
+
+    override fun pageListRequest(chapter: SChapter): Request {
+        return super.pageListRequest(chapter)
+    }
+
+    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+        super.prepareNewChapter(chapter, manga)
     }
 
     override fun chapterListRequest(manga: SManga): Request {

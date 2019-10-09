@@ -1,5 +1,7 @@
 package eu.kanade.tachiyomi.extension.zh.bika;
 
+import android.text.TextUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.internal.$Gson$Types;
 import com.lfkdsk.bika.BikaApi;
@@ -13,11 +15,17 @@ import com.lfkdsk.bika.response.ThumbnailObject;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import eu.kanade.tachiyomi.source.model.MangasPage;
 import eu.kanade.tachiyomi.source.model.SChapter;
 import eu.kanade.tachiyomi.source.model.SManga;
+import okhttp3.Request;
 import okhttp3.Response;
 
 import static java.util.stream.Collectors.toList;
@@ -89,7 +97,31 @@ public final class Helper {
             return null;
         }
 
+        Request request = response.request();
+        String id = request.url().pathSegments().get(1);
 
+        List<SChapter> chapters = body.getEps().getDocs()
+                .stream()
+                .map(eps -> {
+                    SChapter chapter = SChapter.Companion.create();
+                    chapter.setName(eps.getTitle());
+                    chapter.setChapter_number(eps.getOrder());
+                    chapter.setDate_upload(timeStamp2Date(eps.getUpdatedAt()));
+                    chapter.setUrl("/comics/" + id + "/order/" + eps.getOrder() + "/pages");
+                    return chapter;
+                }).collect(Collectors.toList());
+
+        return chapters;
+    }
+
+    public static long timeStamp2Date(String timestampString) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
+        Date date = null;
+        try {
+            date = format.parse(timestampString);
+            return date.getTime();
+        } catch (ParseException e) { }
+        return 0;
     }
 
     private static <T> T parseGen(String json, Type type) {
