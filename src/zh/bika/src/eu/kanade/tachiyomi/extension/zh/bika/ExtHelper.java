@@ -3,6 +3,10 @@ package eu.kanade.tachiyomi.extension.zh.bika;
 import android.util.Pair;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.internal.$Gson$Types;
 import com.lfkdsk.bika.BikaApi;
 import com.lfkdsk.bika.response.ComicDetail;
@@ -42,7 +46,6 @@ import eu.kanade.tachiyomi.source.model.SManga;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static java.util.stream.Collectors.minBy;
 import static java.util.stream.Collectors.toList;
 
 public final class ExtHelper {
@@ -51,6 +54,7 @@ public final class ExtHelper {
     private final static Type chapterdetail = getBaseResponseType(ComicEpisodeResponse.class);
     private final static Type pages = getBaseResponseType(ComicPagesResponse.class);
     private final static Gson gson = new Gson();
+    private final static String categories = "[{\"key\":\"5821859b5f6b9a4f93dbf6e9\",\"value\":\"嗶咔漢化\"},{\"key\":\"5821859b5f6b9a4f93dbf6d1\",\"value\":\"全彩\"},{\"key\":\"5821859b5f6b9a4f93dbf6cd\",\"value\":\"長篇\"},{\"key\":\"5821859b5f6b9a4f93dbf6ca\",\"value\":\"同人\"},{\"key\":\"5821859b5f6b9a4f93dbf6ce\",\"value\":\"短篇\"},{\"key\":\"584ea1f45a44ac4f7dce3623\",\"value\":\"圓神領域\"},{\"key\":\"58542b601b8ef1eb33b57959\",\"value\":\"碧藍幻想\"},{\"key\":\"5821859b5f6b9a4f93dbf6e5\",\"value\":\"CG雜圖\"},{\"key\":\"5821859b5f6b9a4f93dbf6e8\",\"value\":\"英語 ENG\"},{\"key\":\"5821859b5f6b9a4f93dbf6e0\",\"value\":\"生肉\"},{\"key\":\"5821859b5f6b9a4f93dbf6de\",\"value\":\"純愛\"},{\"key\":\"5821859b5f6b9a4f93dbf6d2\",\"value\":\"百合花園\"},{\"key\":\"5821859b5f6b9a4f93dbf6e2\",\"value\":\"耽美花園\"},{\"key\":\"5821859b5f6b9a4f93dbf6e4\",\"value\":\"偽娘哲學\"},{\"key\":\"5821859b5f6b9a4f93dbf6d3\",\"value\":\"後宮閃光\"},{\"key\":\"5821859b5f6b9a4f93dbf6d4\",\"value\":\"扶他樂園\"},{\"key\":\"5abb3fd683111d2ad3eecfca\",\"value\":\"單行本\"},{\"key\":\"5821859b5f6b9a4f93dbf6da\",\"value\":\"姐姐系\"},{\"key\":\"5821859b5f6b9a4f93dbf6db\",\"value\":\"妹妹系\"},{\"key\":\"5821859b5f6b9a4f93dbf6cb\",\"value\":\"SM\"},{\"key\":\"5821859b5f6b9a4f93dbf6d0\",\"value\":\"性轉換\"},{\"key\":\"5821859b5f6b9a4f93dbf6df\",\"value\":\"足の恋\"},{\"key\":\"5821859b5f6b9a4f93dbf6d5\",\"value\":\"重口地帶\"},{\"key\":\"5821859b5f6b9a4f93dbf6cc\",\"value\":\"人妻\"},{\"key\":\"5821859b5f6b9a4f93dbf6d8\",\"value\":\"NTR\"},{\"key\":\"5821859b5f6b9a4f93dbf6d9\",\"value\":\"強暴\"},{\"key\":\"5821859b5f6b9a4f93dbf6d6\",\"value\":\"非人類\"},{\"key\":\"5821859b5f6b9a4f93dbf6cf\",\"value\":\"艦隊收藏\"},{\"key\":\"5821859b5f6b9a4f93dbf6d7\",\"value\":\"Love Live\"},{\"key\":\"5821859b5f6b9a4f93dbf6dc\",\"value\":\"SAO 刀劍神域\"},{\"key\":\"5821859b5f6b9a4f93dbf6e1\",\"value\":\"Fate\"},{\"key\":\"5821859b5f6b9a4f93dbf6dd\",\"value\":\"東方\"},{\"key\":\"59041d54ccc747074b47dae4\",\"value\":\"WEBTOON\"},{\"key\":\"5821859b5f6b9a4f93dbf6e3\",\"value\":\"禁書目錄\"},{\"key\":\"5bd66e7e8ff47f7c46cf999d\",\"value\":\"歐美\"}]";
 
     public static MangasPage popularMangaParse(Response response) throws IOException {
         GeneralResponse<ComicListResponse> castedResponse = parseGen(response.body() != null ? response.body().string() : "", comiclist);
@@ -234,5 +238,17 @@ public final class ExtHelper {
 
     private static <T> Stream<Pair<Integer, T>> zipIndex(Stream<T> stream, int size) {
         return zip(IntStream.range(0, size).boxed(), stream, Pair::new);
+    }
+
+    public static kotlin.Pair<String, String>[] categories() {
+        JsonParser parser = new JsonParser();
+        JsonArray cats = parser.parse(categories).getAsJsonArray();
+        List<kotlin.Pair<String, String>> pairs = new ArrayList<>();
+        for (JsonElement cat : cats) {
+            JsonObject catObj = cat.getAsJsonObject();
+            pairs.add(new kotlin.Pair<>(catObj.get("value").getAsString(), catObj.get("key").getAsString()));
+        }
+
+        return pairs.toArray(new kotlin.Pair[0]);
     }
 }
