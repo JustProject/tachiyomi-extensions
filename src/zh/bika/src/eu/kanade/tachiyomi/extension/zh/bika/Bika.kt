@@ -37,6 +37,11 @@ class Bika : HttpSource() {
         return ExtHelper.mangaDetailsParse(response)
     }
 
+    override fun mangaDetailsRequest(manga: SManga): Request {
+        val id = manga.url.substringAfterLast("/")
+        return BikaApi.getInstance().detailRequest(id)
+    }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         return ExtHelper.chapterListParse(response)
     }
@@ -74,6 +79,13 @@ class Bika : HttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         return ExtHelper.pageListParse(response)
+    }
+
+    override fun pageListRequest(chapter: SChapter): Request {
+        val params = chapter.url.split("/")
+        val id = params[1]
+        val order: Int = params[3].toInt()
+        return BikaApi.getInstance().graphRequest(id, order)
     }
 
     // Unused, we can get image urls directly from the chapter page
