@@ -16,6 +16,7 @@ import com.lfkdsk.bika.response.ComicEpisodeData;
 import com.lfkdsk.bika.response.ComicEpisodeResponse;
 import com.lfkdsk.bika.response.ComicListResponse;
 import com.lfkdsk.bika.response.ComicPage;
+import com.lfkdsk.bika.response.ComicPageData;
 import com.lfkdsk.bika.response.ComicPageGraph;
 import com.lfkdsk.bika.response.ComicPagesResponse;
 import com.lfkdsk.bika.response.GeneralResponse;
@@ -159,7 +160,23 @@ public final class ExtHelper {
             return null;
         }
 
-        final List<ComicPageGraph> data = body.getPages().getDocs();
+        final List<ComicPageGraph> data = new ArrayList<>();
+        final Request request = response.request();
+        final String id = request.url().pathSegments().get(1);
+
+        ComicEpisode episode = body.getEp();
+        ComicPageData pages = body.getPages();
+        int order = episode.getOrder();
+
+        while (pages != null && pages.getPage() <= pages.getPages()) {
+            data.addAll(pages.getDocs());
+            if (pages.getPages() == pages.getPage()) {
+                pages = null;
+            } else {
+                pages = BikaApi.getInstance().pages(id, ++order);
+            }
+        }
+
         return zipIndex(data.stream(), data.size())
                 .map(pair -> new Page(pair.first, "", getThumbnailImagePath(pair.second.getMedia()), null))
                 .collect(Collectors.toList());
