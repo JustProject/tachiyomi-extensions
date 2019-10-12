@@ -163,17 +163,17 @@ public final class ExtHelper {
         final List<ComicPageGraph> data = new ArrayList<>();
         final Request request = response.request();
         final String id = request.url().pathSegments().get(1);
+        final String order = request.url().pathSegments().get(3);
 
-        ComicEpisode episode = body.getEp();
         ComicPageData pages = body.getPages();
-        int order = episode.getOrder();
+        int page = 1;
 
         while (pages != null && pages.getPage() <= pages.getPages()) {
             data.addAll(pages.getDocs());
             if (pages.getPages() == pages.getPage()) {
                 pages = null;
             } else {
-                pages = BikaApi.getInstance().pages(id, ++order);
+                pages = BikaApi.getInstance().pages(id, Integer.parseInt(order), ++page);
             }
         }
 
