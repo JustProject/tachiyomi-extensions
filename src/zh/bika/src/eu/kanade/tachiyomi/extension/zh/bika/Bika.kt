@@ -1,12 +1,17 @@
 package eu.kanade.tachiyomi.extension.zh.bika
 
+import android.app.Application
+import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.lfkdsk.bika.BikaApi
+import eu.kanade.tachiyomi.extension.zh.bika.ExtHelper.bindBikaClient
 import eu.kanade.tachiyomi.source.model.*
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Bika source
@@ -19,11 +24,19 @@ class Bika : HttpSource() {
 
     var category: String? = null
 
+    init {
+        BikaApi.getInstance().token
+    }
+
     override val client: OkHttpClient
         get() {
-            BikaApi.getInstance().initClient()
+            BikaApi.getInstance().initClient(listOf(bindBikaClient(preferences)))
             return BikaApi.getInstance().client
         }
+
+    private val preferences: SharedPreferences by lazy {
+        Injekt.get<Application>().getSharedPreferences("bika", 0x0000)
+    }
 
     override fun popularMangaRequest(page: Int): Request {
         return BikaApi.getInstance().pageRequest(category, page)
@@ -103,4 +116,5 @@ class Bika : HttpSource() {
         open fun toUriPart() = vals[state].second
         open fun name() = vals[state].first
     }
+
 }

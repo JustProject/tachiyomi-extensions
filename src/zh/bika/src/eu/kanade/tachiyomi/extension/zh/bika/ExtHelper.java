@@ -1,5 +1,7 @@
 package eu.kanade.tachiyomi.extension.zh.bika;
 
+import android.app.Application;
+import android.content.SharedPreferences;
 import android.util.Pair;
 
 import com.google.gson.Gson;
@@ -44,6 +46,8 @@ import eu.kanade.tachiyomi.source.model.MangasPage;
 import eu.kanade.tachiyomi.source.model.Page;
 import eu.kanade.tachiyomi.source.model.SChapter;
 import eu.kanade.tachiyomi.source.model.SManga;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -267,5 +271,46 @@ public final class ExtHelper {
         }
 
         return pairs.toArray(new kotlin.Pair[0]);
+    }
+
+    public static class BikaTokenIntercept implements Interceptor {
+        private String token;
+        private SharedPreferences preferences;
+
+        public BikaTokenIntercept(String token, SharedPreferences preferences) {
+            this.token = token;
+            this.preferences = preferences;
+        }
+
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request original = chain.request();
+            Response response = chain.proceed(original);
+
+            if (response.code() == 401) {
+                String token = BikaApi.getInstance().token("", "");
+
+                if (token != null) {
+                    preferences.edit().putString("token", token).commit();
+                    Request newRequest = chain.request()
+                            .newBuilder()
+                            .header("authorization", token)
+                            .build();
+
+                    return chain.proceed(newRequest.newBuilder().build());
+                }
+            }
+
+            return response;
+        }
+    }
+
+    public static Interceptor bindBikaClient(SharedPreferences preferences) {
+        String token = preferences.getString("token", "fuck");
+        if (token.equals("fuck")) {
+            token = BikaApi.getInstance().getToken();
+        }
+
+        return new BikaTokenIntercept(token, preferences);
     }
 }
